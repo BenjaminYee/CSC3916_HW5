@@ -1,7 +1,6 @@
 import actionTypes from '../constants/actionTypes';
 import runtimeEnv from '@mars/heroku-js-runtime-env'
 
-
 function moviesFetched(movies) {
     return {
         type: actionTypes.FETCH_MOVIES,
@@ -16,23 +15,49 @@ function movieFetched(movie) {
     }
 }
 
-function movieSet(movie) {
+function movieSet(movie){
     return {
         type: actionTypes.SET_MOVIE,
         selectedMovie: movie
     }
 }
 
-export function setMovie(movie) {
+export function setMovie(movie){
     return dispatch => {
         dispatch(movieSet(movie));
     }
 }
 
-export function fetchMovie(movieId) {
+export function setReview(movie, text, rating) {
     const env = runtimeEnv();
     return dispatch => {
-        return fetch(`${env.REACT_APP_API_URL}/movies/${movieId}?reviews=true`, {
+        return fetch(`${env.REACT_APP_API_URL}/reviews`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                "username": localStorage.getItem('username'),
+                "movie": movie,
+                "text": text,
+                "rating": rating
+            }),
+            mode: 'cors'
+        }).then((response) => {
+            if (!response.ok) {
+                throw Error(response.statusText);
+            }
+            return response.json()
+        }).catch((e) => console.log(e));
+    }
+}
+
+export function fetchMovie(movieTitle) {
+    const env = runtimeEnv();
+    return dispatch => {
+        return fetch(`${env.REACT_APP_API_URL}/movies/${movieTitle}?reviews=1`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -54,7 +79,7 @@ export function fetchMovie(movieId) {
 export function fetchMovies() {
     const env = runtimeEnv();
     return dispatch => {
-        return fetch(`${env.REACT_APP_API_URL}/movies?reviews=true`, {
+        return fetch(`${env.REACT_APP_API_URL}/movies?reviews=1`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
